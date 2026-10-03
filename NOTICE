@@ -1,0 +1,6 @@
+AWS SDK for Ruby
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+This package is a port of the aws-sigv4 gem 1.12.1 to Spinel. The files
+were copied from the gem and modified where they say
+"# spinel-aws-sigv4:"; see the README for each change.

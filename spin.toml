@@ -1,0 +1,6 @@
+[package]
+name = "aws-sigv4"
+version = "0.1.0"
+
+[dependencies]
+aws-eventstream = { git = "https://github.com/aristotelesbr/spinel-aws-eventstream" }
