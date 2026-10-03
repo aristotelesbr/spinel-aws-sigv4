@@ -1,0 +1,7 @@
+string: b6359072c78d70ebee1e81adcbab4f01bf2c23245fa365ef83fe8f1f955085e2
+  AWS4-HMAC-SHA256 Credential=AKIDEXAMPLE/20150830/us-east-1/service/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=920b073b4ed5abce2be0ee7563a192a5628fa77cbc9a920b54d5ba311a5ecab1
+stringio: b6359072c78d70ebee1e81adcbab4f01bf2c23245fa365ef83fe8f1f955085e2
+  AWS4-HMAC-SHA256 Credential=AKIDEXAMPLE/20150830/us-east-1/service/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=920b073b4ed5abce2be0ee7563a192a5628fa77cbc9a920b54d5ba311a5ecab1
+file: b6359072c78d70ebee1e81adcbab4f01bf2c23245fa365ef83fe8f1f955085e2
+  AWS4-HMAC-SHA256 Credential=AKIDEXAMPLE/20150830/us-east-1/service/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=920b073b4ed5abce2be0ee7563a192a5628fa77cbc9a920b54d5ba311a5ecab1
+a=0&a=1&a=1&b=2&c=
