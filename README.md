@@ -32,7 +32,7 @@ shows every change. There are six:
 | Where | The gem | Here | Why | Remove when |
 |---|---|---|---|---|
 | `aws-sigv4.rb` | `VERSION = File.read(...VERSION...)` | `VERSION = '1.12.1'` | a compiled binary does not carry the VERSION file | never; keep in step with `UPSTREAM` |
-| `signer.rb`, `asymmetric_signature` | `Digest.hexencode(s)` | `s.unpack1('H*')` | Spinel has no `Digest.hexencode` (matz/spinel#7241) | matz/spinel#7243 and #7244 are merged |
+| `signer.rb`, `asymmetric_signature` | `Digest.hexencode(s)` | `s.unpack1('H*')` | Spinel has no `Digest.hexencode` (matz/spinel#7241); on the SigV4a path, so untested under Spinel | matz/spinel#7243 and #7244 are merged |
 | `signer.rb`, `normalized_querystring` | `params.each.with_index.sort { }` | `[param, offset]` pairs built first, then `sort { }` | Spinel does not compile `each.with_index.sort` | Spinel compiles it |
 | `signer.rb`, `sha256_hexdigest` | `Digest::SHA256.file(value)`; incremental `Digest#update` for IO | the body read to the end, hashed once | Spinel's openssl has neither (matz/spinel#7206) | Spinel's openssl has both |
 | `signer.rb`, `hmac` / `hexhmac` | `OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), ...)` | `OpenSSL::HMAC.digest('sha256', ...)` | Spinel has no `OpenSSL::Digest.new(name)` (matz/spinel#7206) | Spinel's openssl has it |
@@ -41,8 +41,8 @@ shows every change. There are six:
 ## Known gaps
 
 - **SigV4a** (`signing_algorithm: :sigv4a`) raises `NameError` under Spinel:
-  its openssl package has no `OpenSSL::ASN1`. Plain SigV4, the default, is
-  complete.
+  its openssl package has no `OpenSSL::ASN1`, and the compiler prints a
+  warning about it on every build. Plain SigV4, the default, is complete.
 - **File and IO bodies** are hashed from one String holding the whole body,
   so memory grows with the body (the gem streamed 1 MB chunks). A File or
   Tempfile body ends at position 0 (the gem left it where it was), and a
@@ -68,8 +68,8 @@ spin binary if the one on `PATH` is not current.
 
 Every `.expected` is the real gem's output. The suite in `test/fixtures/suite`
 is the official AWS Signature Version 4 test suite, as aws-sdk-ruby ships it
-(see `UPSTREAM` and the suite's own `LICENSE` and `NOTICE`); all 22 of its
-cases match AWS's expected canonical request, string to sign and
+(see `UPSTREAM` and the suite's own `LICENSE` and `NOTICE`); the 22 cases
+aws-sdk-ruby's suite_spec runs all match AWS's expected canonical request, string to sign and
 authorization header. Tested with Spinel `3d541fc87`.
 
 ## License

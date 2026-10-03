@@ -687,6 +687,7 @@ module Aws
         OpenSSL::HMAC.digest('sha256', key, value)
       end
 
+      # spinel-aws-sigv4: the algorithm by name, as in hmac above.
       def hexhmac(key, value)
         OpenSSL::HMAC.hexdigest('sha256', key, value)
       end
