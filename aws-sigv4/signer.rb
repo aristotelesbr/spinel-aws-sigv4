@@ -548,7 +548,9 @@ module Aws
         sts_digest = OpenSSL::Digest::SHA256.digest(string_to_sign)
         s = ec.dsa_sign_asn1(sts_digest)
 
-        Digest.hexencode(s)
+        # spinel-aws-sigv4: workaround for matz/spinel#7241 (no
+        # Digest.hexencode); remove when #7243 and #7244 are merged.
+        s.unpack1('H*')
       end
 
       # Comparing to original signature v4 algorithm,
@@ -590,7 +592,12 @@ module Aws
         # causes our normalized query string to not match the sent querystring.
         # When names match, we then sort by their values.  When values also
         # match then we sort by their original order
-        params.each.with_index.sort do |a, b|
+        # spinel-aws-sigv4: Spinel does not compile each.with_index.sort, so
+        # the [param, offset] pairs are built first. The order is the same: the
+        # offset tiebreak makes it total, so sort stability does not matter.
+        indexed = []
+        params.each_with_index { |param, offset| indexed << [param, offset] }
+        indexed.sort do |a, b|
           a, a_offset = a
           b, b_offset = b
           a_name, a_value = a.split('=')
@@ -645,28 +652,39 @@ module Aws
       # @param [File, Tempfile, IO#read, String] value
       # @return [String<SHA256 Hexdigest>]
       def sha256_hexdigest(value)
-        if (File === value || Tempfile === value) && !value.path.nil? && File.exist?(value.path)
-          OpenSSL::Digest::SHA256.file(value).hexdigest
-        elsif value.respond_to?(:read)
-          sha256 = OpenSSL::Digest::SHA256.new
+        # spinel-aws-sigv4: Spinel's openssl has neither Digest.file nor the
+        # incremental Digest object (matz/spinel#7206), and value.path on a
+        # File raised under Spinel. So a body that responds to read is read to
+        # the end and hashed at once: a File or Tempfile from its start, any
+        # other IO from where it is, as the gem does. The digest is the gem's
+        # for an open, readable body, but the whole body is held in memory, a
+        # File or Tempfile ends at position 0 (the gem leaves it where it was),
+        # and a closed or write-only File raises IOError (the gem read it by
+        # path). See the README.
+        if value.respond_to?(:read)
+          value.rewind if File === value || Tempfile === value
+          data = ''.b
           loop do
             chunk = value.read(1024 * 1024) # 1MB
             break unless chunk
-            sha256.update(chunk)
+            data << chunk
           end
           value.rewind
-          sha256.hexdigest
+          OpenSSL::Digest::SHA256.hexdigest(data)
         else
           OpenSSL::Digest::SHA256.hexdigest(value)
         end
       end
 
+      # spinel-aws-sigv4: the algorithm by name, a form CRuby also takes;
+      # Spinel's openssl has no OpenSSL::Digest.new(name) (matz/spinel#7206).
+      # The same applies to hexhmac below.
       def hmac(key, value)
-        OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), key, value)
+        OpenSSL::HMAC.digest('sha256', key, value)
       end
 
       def hexhmac(key, value)
-        OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha256'), key, value)
+        OpenSSL::HMAC.hexdigest('sha256', key, value)
       end
 
       def extract_service(options)

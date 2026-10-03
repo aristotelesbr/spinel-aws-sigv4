@@ -8,6 +8,8 @@ require_relative 'aws-sigv4/signer'
 
 module Aws
   module Sigv4
-    VERSION = File.read(File.expand_path('../VERSION', __dir__)).strip
+    # spinel-aws-sigv4: the gem reads its VERSION file at load time, and a
+    # compiled binary does not carry it. Keep in step with UPSTREAM.
+    VERSION = '1.12.1'
   end
 end
