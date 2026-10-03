@@ -435,7 +435,11 @@ module Aws
         params['X-Amz-Algorithm'] = algorithm
         params['X-Amz-Credential'] = credential(creds, date)
         params['X-Amz-Date'] = datetime
-        params['X-Amz-Expires'] = presigned_url_expiration(options, expiration, Time.strptime(datetime, "%Y%m%dT%H%M%S%Z")).to_s
+        # spinel-aws-sigv4: Spinel has no Time.strptime (matz/spinel#1117, not
+        # planned); datetime is always YYYYMMDDTHHMMSSZ, read here field by field.
+        signed_at = Time.utc(datetime[0, 4].to_i, datetime[4, 2].to_i, datetime[6, 2].to_i,
+                             datetime[9, 2].to_i, datetime[11, 2].to_i, datetime[13, 2].to_i)
+        params['X-Amz-Expires'] = presigned_url_expiration(options, expiration, signed_at).to_s
         if creds.session_token
           if @signing_algorithm == 'sigv4-s3express'.to_sym
             params['X-Amz-S3session-Token'] = creds.session_token

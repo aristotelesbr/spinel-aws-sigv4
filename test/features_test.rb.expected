@@ -1,0 +1,12 @@
+1.12.1
+https://example.amazonaws.com/a%20b?x=1&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIDEXAMPLE%2F20150830%2Fus-east-1%2Fservice%2Faws4_request&X-Amz-Date=20150830T123600Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=38bbb4dd8c12f4324493f791972ca837d60765dee52bd445a2a30b6ab71c4437
+authorization,host,x-amz-content-sha256,x-amz-date,x-amz-security-token
+TOKEN
+AWS4-HMAC-SHA256 Credential=AKIDEXAMPLE/20150830/us-east-1/service/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date;x-amz-security-token, Signature=ec22ce7422b6824bc7a68b5dc64a77991911688597b77f4f176e41cdd8699e41
+x-amz-content-sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+authorization,host,x-amz-date
+/a%2520b/c%252Fd~e
+:chunk-signature,:date
+bytes,timestamp
+64
+true
