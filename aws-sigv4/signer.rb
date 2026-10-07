@@ -654,14 +654,10 @@ module Aws
       # @param [File, Tempfile, IO#read, String] value
       # @return [String<SHA256 Hexdigest>]
       def sha256_hexdigest(value)
-        # spinel-aws-sigv4: Spinel's openssl has no Digest.file and Spinel's
-        # File has no #path, so the gem's File branch cannot run. A body that
-        # responds to read is read to the end and hashed at once: a File or
-        # Tempfile from its start, any other IO from where it is, as the gem
-        # does. The digest is the gem's for an open, readable body, but the
-        # whole body is held in memory, a File or Tempfile ends at position 0
-        # (the gem leaves it where it was), and a closed or write-only File
-        # raises IOError (the gem read it by path). See the README.
+        # spinel-aws-sigv4: a body that responds to read is read to the end
+        # and hashed at once (a File or Tempfile from its start), since the
+        # gem's form does not run under Spinel yet. Same digest; see the
+        # README.
         if value.respond_to?(:read)
           value.rewind if File === value || Tempfile === value
           data = ''.b
@@ -677,9 +673,8 @@ module Aws
         end
       end
 
-      # spinel-aws-sigv4: the algorithm by name, a form CRuby also takes;
-      # Spinel's OpenSSL::HMAC accepts only the name, not a Digest object.
-      # The same applies to hexhmac below.
+      # spinel-aws-sigv4: the algorithm by name, a form CRuby also takes and
+      # the one that runs under Spinel. The same applies to hexhmac below.
       def hmac(key, value)
         OpenSSL::HMAC.digest('sha256', key, value)
       end

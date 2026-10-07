@@ -33,8 +33,8 @@ shows every change. There are five:
 |---|---|---|---|---|
 | `aws-sigv4.rb` | `VERSION = File.read(...VERSION...)` | `VERSION = '1.12.1'` | a compiled binary does not carry the VERSION file | never; keep in step with `UPSTREAM` |
 | `signer.rb`, `normalized_querystring` | `params.each.with_index.sort { }` | `[param, offset]` pairs built first, then `sort { }` | Spinel does not compile `each.with_index.sort` | Spinel compiles it |
-| `signer.rb`, `sha256_hexdigest` | `Digest::SHA256.file(value)`; incremental `Digest#update` for IO | the body read to the end, hashed once | Spinel's openssl has no `Digest.file`, and Spinel's `File` has no `#path` | Spinel has both |
-| `signer.rb`, `hmac` / `hexhmac` | `OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), ...)` | `OpenSSL::HMAC.digest('sha256', ...)` | Spinel's `OpenSSL::HMAC` takes the algorithm only by name, not as a Digest object | Spinel's `OpenSSL::HMAC` takes a Digest |
+| `signer.rb`, `sha256_hexdigest` | `Digest::SHA256.file(value)`; incremental `Digest#update` for IO | the body read to the end, hashed once | the gem's form does not run under Spinel yet | the gem's form runs |
+| `signer.rb`, `hmac` / `hexhmac` | `OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), ...)` | `OpenSSL::HMAC.digest('sha256', ...)` | the same result; the gem's form does not run under Spinel yet | the gem's form runs |
 | `signer.rb`, `presign_url` | `Time.strptime(datetime, ...)` | `Time.utc(...)` from the datetime's fields | Spinel has no `Time.strptime`, by decision (matz/spinel#1117) | likely never |
 
 ## Known gaps
@@ -42,11 +42,8 @@ shows every change. There are five:
 - **SigV4a** (`signing_algorithm: :sigv4a`) raises `NameError` under Spinel:
   its openssl package has no `OpenSSL::ASN1`, and the compiler prints a
   warning about it on every build. Plain SigV4, the default, is complete.
-- **File and IO bodies** are hashed from one String holding the whole body,
-  so memory grows with the body (the gem streamed 1 MB chunks). A File or
-  Tempfile body ends at position 0 (the gem left it where it was), and a
-  closed or write-only File raises `IOError` (the gem read it by path).
-  The digest is the gem's for any open, readable body.
+- **File and IO bodies** are read whole before hashing, and a File body is
+  left at position 0. The digest is the gem's.
 - **`sign_event`** takes `Time.now`, so its test checks the shape of the
   headers and that `:chunk-signature` carries the returned signature,
   not the signature itself.
