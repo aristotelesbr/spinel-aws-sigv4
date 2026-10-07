@@ -27,15 +27,14 @@ signature.headers["authorization"]
 ## What was rewritten, and why
 
 `git diff` against the commit "Add the aws-sigv4 gem 1.12.1 lib/ verbatim"
-shows every change. There are six:
+shows every change. There are five:
 
 | Where | The gem | Here | Why | Remove when |
 |---|---|---|---|---|
 | `aws-sigv4.rb` | `VERSION = File.read(...VERSION...)` | `VERSION = '1.12.1'` | a compiled binary does not carry the VERSION file | never; keep in step with `UPSTREAM` |
-| `signer.rb`, `asymmetric_signature` | `Digest.hexencode(s)` | `s.unpack1('H*')` | Spinel has no `Digest.hexencode` (matz/spinel#7241); on the SigV4a path, so untested under Spinel | matz/spinel#7243 and #7244 are merged |
 | `signer.rb`, `normalized_querystring` | `params.each.with_index.sort { }` | `[param, offset]` pairs built first, then `sort { }` | Spinel does not compile `each.with_index.sort` | Spinel compiles it |
-| `signer.rb`, `sha256_hexdigest` | `Digest::SHA256.file(value)`; incremental `Digest#update` for IO | the body read to the end, hashed once | Spinel's openssl has neither (matz/spinel#7206) | Spinel's openssl has both |
-| `signer.rb`, `hmac` / `hexhmac` | `OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), ...)` | `OpenSSL::HMAC.digest('sha256', ...)` | Spinel has no `OpenSSL::Digest.new(name)` (matz/spinel#7206) | Spinel's openssl has it |
+| `signer.rb`, `sha256_hexdigest` | `Digest::SHA256.file(value)`; incremental `Digest#update` for IO | the body read to the end, hashed once | Spinel's openssl has no `Digest.file`, and Spinel's `File` has no `#path` | Spinel has both |
+| `signer.rb`, `hmac` / `hexhmac` | `OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), ...)` | `OpenSSL::HMAC.digest('sha256', ...)` | Spinel's `OpenSSL::HMAC` takes the algorithm only by name, not as a Digest object | Spinel's `OpenSSL::HMAC` takes a Digest |
 | `signer.rb`, `presign_url` | `Time.strptime(datetime, ...)` | `Time.utc(...)` from the datetime's fields | Spinel has no `Time.strptime`, by decision (matz/spinel#1117) | likely never |
 
 ## Known gaps
@@ -70,7 +69,11 @@ Every `.expected` is the real gem's output. The suite in `test/fixtures/suite`
 is the official AWS Signature Version 4 test suite, as aws-sdk-ruby ships it
 (see `UPSTREAM` and the suite's own `LICENSE` and `NOTICE`); the 22 cases
 aws-sdk-ruby's suite_spec runs all match AWS's expected canonical request, string to sign and
-authorization header. Tested with Spinel `3d541fc87`.
+authorization header. Tested with Spinel `5c78f07e5`.
+
+Version 0.1.1 dropped the `Digest.hexencode` rewrite (matz/spinel#7243 and
+#7244 are merged), so it needs a Spinel from `5c78f07e5` (2026-10-07) or
+later.
 
 ## License
 

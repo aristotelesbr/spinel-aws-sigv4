@@ -552,9 +552,7 @@ module Aws
         sts_digest = OpenSSL::Digest::SHA256.digest(string_to_sign)
         s = ec.dsa_sign_asn1(sts_digest)
 
-        # spinel-aws-sigv4: workaround for matz/spinel#7241 (no
-        # Digest.hexencode); remove when #7243 and #7244 are merged.
-        s.unpack1('H*')
+        Digest.hexencode(s)
       end
 
       # Comparing to original signature v4 algorithm,
@@ -656,15 +654,14 @@ module Aws
       # @param [File, Tempfile, IO#read, String] value
       # @return [String<SHA256 Hexdigest>]
       def sha256_hexdigest(value)
-        # spinel-aws-sigv4: Spinel's openssl has neither Digest.file nor the
-        # incremental Digest object (matz/spinel#7206), and value.path on a
-        # File raised under Spinel. So a body that responds to read is read to
-        # the end and hashed at once: a File or Tempfile from its start, any
-        # other IO from where it is, as the gem does. The digest is the gem's
-        # for an open, readable body, but the whole body is held in memory, a
-        # File or Tempfile ends at position 0 (the gem leaves it where it was),
-        # and a closed or write-only File raises IOError (the gem read it by
-        # path). See the README.
+        # spinel-aws-sigv4: Spinel's openssl has no Digest.file and Spinel's
+        # File has no #path, so the gem's File branch cannot run. A body that
+        # responds to read is read to the end and hashed at once: a File or
+        # Tempfile from its start, any other IO from where it is, as the gem
+        # does. The digest is the gem's for an open, readable body, but the
+        # whole body is held in memory, a File or Tempfile ends at position 0
+        # (the gem leaves it where it was), and a closed or write-only File
+        # raises IOError (the gem read it by path). See the README.
         if value.respond_to?(:read)
           value.rewind if File === value || Tempfile === value
           data = ''.b
@@ -681,7 +678,7 @@ module Aws
       end
 
       # spinel-aws-sigv4: the algorithm by name, a form CRuby also takes;
-      # Spinel's openssl has no OpenSSL::Digest.new(name) (matz/spinel#7206).
+      # Spinel's OpenSSL::HMAC accepts only the name, not a Digest object.
       # The same applies to hexhmac below.
       def hmac(key, value)
         OpenSSL::HMAC.digest('sha256', key, value)
