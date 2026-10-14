@@ -66,7 +66,7 @@ Every `.expected` is the real gem's output. The suite in `test/fixtures/suite`
 is the official AWS Signature Version 4 test suite, as aws-sdk-ruby ships it
 (see `UPSTREAM` and the suite's own `LICENSE` and `NOTICE`); the 22 cases
 aws-sdk-ruby's suite_spec runs all match AWS's expected canonical request, string to sign and
-authorization header. Tested with Spinel `5c78f07e5`.
+authorization header. Tested with Spinel `5294fcba7`.
 
 Version 0.1.1 dropped the `Digest.hexencode` rewrite (matz/spinel#7243 and
 #7244 are merged), so it needs a Spinel from `5c78f07e5` (2026-10-07) or
