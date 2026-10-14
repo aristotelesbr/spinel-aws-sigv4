@@ -3,14 +3,18 @@
 # .expected: once with the real aws-sigv4 gem (the oracle) and once with this
 # package and its spin dependencies. With --write, regenerates every .expected
 # from the real gem. A run counts only if ruby exits 0; stdout alone is compared.
-# SPIN names the spin binary (default: spin on PATH).
+# SPIN names the spin binary (default: spin on PATH). RUBY names the ruby
+# to run (default: Ruby 4.0.2 through mise).
 set -eu
 CDPATH= cd "$(dirname "$0")/.."
 export BUNDLE_GEMFILE="$PWD/oracle/Gemfile"
 SPIN=${SPIN:-spin}
+cruby() {
+  if [ -n "${RUBY:-}" ]; then "$RUBY" "$@"; else mise exec ruby@4.0.2 -- ruby "$@"; fi
+}
 INCLUDES=$("$SPIN" flags | sed 's/--require-gate//')
-ruby_gem() { mise exec ruby@4.0.2 -- bundle exec ruby "$1"; }
-ruby_pkg() { mise exec ruby@4.0.2 -- ruby --disable-gems $INCLUDES "$1"; }
+ruby_gem() { cruby -rbundler/setup "$1"; }
+ruby_pkg() { cruby --disable-gems $INCLUDES "$1"; }
 
 tmp=$(mktemp)
 trap 'rm -f "$tmp"' EXIT
