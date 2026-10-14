@@ -673,15 +673,12 @@ module Aws
         end
       end
 
-      # spinel-aws-sigv4: the algorithm by name, a form CRuby also takes and
-      # the one that runs under Spinel. The same applies to hexhmac below.
       def hmac(key, value)
-        OpenSSL::HMAC.digest('sha256', key, value)
+        OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), key, value)
       end
 
-      # spinel-aws-sigv4: the algorithm by name, as in hmac above.
       def hexhmac(key, value)
-        OpenSSL::HMAC.hexdigest('sha256', key, value)
+        OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha256'), key, value)
       end
 
       def extract_service(options)
