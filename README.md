@@ -33,7 +33,7 @@ shows every change. There are four:
 |---|---|---|---|---|
 | `aws-sigv4.rb` | `VERSION = File.read(...VERSION...)` | `VERSION = '1.12.1'` | a compiled binary does not carry the VERSION file | never; keep in step with `UPSTREAM` |
 | `signer.rb`, `normalized_querystring` | `params.each.with_index.sort { }` | `[param, offset]` pairs built first, then `sort { }` | Spinel does not compile `each.with_index.sort` | Spinel compiles it |
-| `signer.rb`, `sha256_hexdigest` | `Digest::SHA256.file(value)`; incremental `Digest#update` for IO | the body read to the end, hashed once | the gem's form does not run under Spinel yet | the gem's form runs |
+| `signer.rb`, `sha256_hexdigest` | `Digest::SHA256.file(value)` for a File or Tempfile; incremental `Digest#update` for IO | a File or Tempfile is rewound and hashed through the IO branch | Spinel has no `Digest::SHA256.file` yet | Spinel has `Digest::SHA256.file` |
 | `signer.rb`, `presign_url` | `Time.strptime(datetime, ...)` | `Time.utc(...)` from the datetime's fields | Spinel has no `Time.strptime`, by decision (matz/spinel#1117) | likely never |
 
 ## Known gaps
@@ -41,8 +41,9 @@ shows every change. There are four:
 - **SigV4a** (`signing_algorithm: :sigv4a`) raises `NameError` under Spinel:
   its openssl package has no `OpenSSL::ASN1`, and the compiler prints a
   warning about it on every build. Plain SigV4, the default, is complete.
-- **File and IO bodies** are read whole before hashing, and a File body is
-  left at position 0. The digest is the gem's.
+- **File bodies** are read through the IO they are, from position 0, and
+  left at position 0; the gem hashes the file at its path. The digest is the
+  gem's.
 - **`sign_event`** takes `Time.now`, so its test checks the shape of the
   headers and that `:chunk-signature` carries the returned signature,
   not the signature itself.
