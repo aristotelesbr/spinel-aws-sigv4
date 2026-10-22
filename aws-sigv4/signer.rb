@@ -654,11 +654,9 @@ module Aws
       # @param [File, Tempfile, IO#read, String] value
       # @return [String<SHA256 Hexdigest>]
       def sha256_hexdigest(value)
-        # spinel-aws-sigv4: Spinel has no Digest::SHA256.file yet, so a File
-        # or Tempfile is hashed from its start through the IO branch below.
-        # Same digest; see the README.
-        if value.respond_to?(:read)
-          value.rewind if File === value || Tempfile === value
+        if (File === value || Tempfile === value) && !value.path.nil? && File.exist?(value.path)
+          OpenSSL::Digest::SHA256.file(value).hexdigest
+        elsif value.respond_to?(:read)
           sha256 = OpenSSL::Digest::SHA256.new
           loop do
             chunk = value.read(1024 * 1024) # 1MB

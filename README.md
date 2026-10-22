@@ -27,13 +27,12 @@ signature.headers["authorization"]
 ## What was rewritten, and why
 
 `git diff` against the commit "Add the aws-sigv4 gem 1.12.1 lib/ verbatim"
-shows every change. There are four:
+shows every change. There are three:
 
 | Where | The gem | Here | Why | Remove when |
 |---|---|---|---|---|
 | `aws-sigv4.rb` | `VERSION = File.read(...VERSION...)` | `VERSION = '1.12.1'` | a compiled binary does not carry the VERSION file | never; keep in step with `UPSTREAM` |
 | `signer.rb`, `normalized_querystring` | `params.each.with_index.sort { }` | `[param, offset]` pairs built first, then `sort { }` | Spinel does not compile `each.with_index.sort` | Spinel compiles it |
-| `signer.rb`, `sha256_hexdigest` | `Digest::SHA256.file(value)` for a File or Tempfile; incremental `Digest#update` for IO | a File or Tempfile is rewound and hashed through the IO branch | Spinel has no `Digest::SHA256.file` yet | Spinel has `Digest::SHA256.file` |
 | `signer.rb`, `presign_url` | `Time.strptime(datetime, ...)` | `Time.utc(...)` from the datetime's fields | Spinel has no `Time.strptime`, by decision (matz/spinel#1117) | likely never |
 
 ## Known gaps
@@ -41,9 +40,6 @@ shows every change. There are four:
 - **SigV4a** (`signing_algorithm: :sigv4a`) raises `NameError` under Spinel:
   its openssl package has no `OpenSSL::ASN1`, and the compiler prints a
   warning about it on every build. Plain SigV4, the default, is complete.
-- **File bodies** are read through the IO they are, from position 0, and
-  left at position 0; the gem hashes the file at its path. The digest is the
-  gem's.
 - **`sign_event`** takes `Time.now`, so its test checks the shape of the
   headers and that `:chunk-signature` carries the returned signature,
   not the signature itself.
@@ -67,7 +63,7 @@ Every `.expected` is the real gem's output. The suite in `test/fixtures/suite`
 is the official AWS Signature Version 4 test suite, as aws-sdk-ruby ships it
 (see `UPSTREAM` and the suite's own `LICENSE` and `NOTICE`); the 22 cases
 aws-sdk-ruby's suite_spec runs all match AWS's expected canonical request, string to sign and
-authorization header. Tested with Spinel `165974895`.
+authorization header. Tested with Spinel `ba0e32b07`.
 
 `.github/workflows/test.yml` runs both on Linux and macOS on every push
 against that Spinel revision. `.github/workflows/spinel-master.yml` runs the
@@ -80,6 +76,9 @@ later.
 
 Version 0.1.2 dropped the HMAC rewrite (matz/spinel#9133 is merged), so it
 needs a Spinel from `30f7d7e4d` (2026-10-15) or later.
+
+Version 0.1.3 dropped the `sha256_hexdigest` rewrite (matz/spinel#9910 is
+merged), so it needs a Spinel from `42119419c` (2026-10-22) or later.
 
 ## License
 
