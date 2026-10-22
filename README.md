@@ -62,7 +62,7 @@ Every `.expected` is the real gem's output. The suite in `test/fixtures/suite`
 is the official AWS Signature Version 4 test suite, as aws-sdk-ruby ships it
 (see `UPSTREAM` and the suite's own `LICENSE` and `NOTICE`); the 22 cases
 aws-sdk-ruby's suite_spec runs all match AWS's expected canonical request, string to sign and
-authorization header. Tested with Spinel `ba0e32b07`.
+authorization header. Tested with Spinel `89100bf0f`.
 
 `.github/workflows/test.yml` runs both on Linux and macOS on every push
 against that Spinel revision. `.github/workflows/spinel-master.yml` runs the
@@ -78,6 +78,9 @@ needs a Spinel from `30f7d7e4d` (2026-10-15) or later.
 
 Version 0.1.3 dropped the `sha256_hexdigest` rewrite (matz/spinel#9910 is
 merged), so it needs a Spinel from `42119419c` (2026-10-22) or later.
+
+Version 0.1.4 dropped the `each.with_index.sort` rewrite (matz/spinel#9937 is
+merged), so it needs a Spinel from `89100bf0f` (2026-10-22) or later.
 
 ## License
 
