@@ -594,12 +594,7 @@ module Aws
         # causes our normalized query string to not match the sent querystring.
         # When names match, we then sort by their values.  When values also
         # match then we sort by their original order
-        # spinel-aws-sigv4: Spinel does not compile each.with_index.sort, so
-        # the [param, offset] pairs are built first. The order is the same: the
-        # offset tiebreak makes it total, so sort stability does not matter.
-        indexed = []
-        params.each_with_index { |param, offset| indexed << [param, offset] }
-        indexed.sort do |a, b|
+        params.each.with_index.sort do |a, b|
           a, a_offset = a
           b, b_offset = b
           a_name, a_value = a.split('=')
