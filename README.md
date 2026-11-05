@@ -27,12 +27,11 @@ signature.headers["authorization"]
 ## What was rewritten, and why
 
 `git diff` against the commit "Add the aws-sigv4 gem 1.12.1 lib/ verbatim"
-shows every change. There are two:
+shows every change. There is one:
 
 | Where | The gem | Here | Why | Remove when |
 |---|---|---|---|---|
 | `aws-sigv4.rb` | `VERSION = File.read(...VERSION...)` | `VERSION = '1.12.1'` | a compiled binary does not carry the VERSION file | never; keep in step with `UPSTREAM` |
-| `signer.rb`, `presign_url` | `Time.strptime(datetime, ...)` | `Time.utc(...)` from the datetime's fields | Spinel has no `Time.strptime`, by decision (matz/spinel#1117) | likely never |
 
 ## Known gaps
 
