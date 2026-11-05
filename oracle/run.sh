@@ -12,7 +12,7 @@ SPIN=${SPIN:-spin}
 cruby() {
   if [ -n "${RUBY:-}" ]; then "$RUBY" "$@"; else mise exec ruby@4.0.2 -- ruby "$@"; fi
 }
-INCLUDES=$("$SPIN" flags | sed 's/--require-gate//')
+INCLUDES=$("$SPIN" flags | sed 's/--require-gate//; s/--strict-require//')
 ruby_gem() { cruby -rbundler/setup "$1"; }
 ruby_pkg() { cruby --disable-gems $INCLUDES "$1"; }
 
